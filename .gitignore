@@ -1,0 +1,34 @@
+.env
+bin/
+
+# All run output (generated, gitignored)
+output/
+
+# Generated images (kept locally)
+assets/images/
+
+# Shorts work directories (per-run scenes/audio/clips)
+shorts/assets/
+
+*.log
+local/*
+
+# Browser extension (kept local for now)
+browser-ext/
+
+# Archive of older runs
+_archive/
+
+# Compiled binaries
+*.exe
+
+# Claude Code local config
+.claude/
+
+# Python
+__pycache__/
+*.pyc
+
+# IDE
+.idea/
+.vscode/
