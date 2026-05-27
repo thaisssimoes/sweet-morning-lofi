@@ -106,3 +106,9 @@ sweet-morning-lofi/
 
 - Each subproject has its own `go.mod` (or no module manager, for Python). They are kept under one repo because they share assets, credentials, and the target channel.
 - `_archive/` (gitignored) holds the previous monolithic pipeline, kept for reference until the new structure is fully ported.
+
+## License
+
+All rights reserved.
+
+This source is published for reference and portfolio purposes only. No permission is granted to use, copy, modify, merge, publish, distribute, sublicense, or sell copies of the code, in whole or in part, without explicit written permission from the author.
