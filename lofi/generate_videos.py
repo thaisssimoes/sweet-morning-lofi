@@ -7,6 +7,8 @@ Usage:
     python generate_videos.py -n 3                         # 3 vídeos
     python generate_videos.py -b 25-05-2026                # 7 vídeos a partir dessa data
     python generate_videos.py -n 3 -b 25-05-2026           # 3 vídeos a partir dessa data
+    python generate_videos.py -c                           # continua do dia seguinte ao último vídeo gerado
+    python generate_videos.py -c -n 3                      # idem, gerando 3 vídeos
     python generate_videos.py --upload-from 20-05-2026     # sobe vídeos já gerados
     python generate_videos.py --upload-from 20-05-2026 --upload-to 27-05-2026
 """
@@ -553,6 +555,22 @@ def _dates_in_range(start: date, end: date):
         yield d
         d += timedelta(days=1)
 
+
+def _last_generated_date(out_dir: Path) -> date | None:
+    if not out_dir.exists():
+        return None
+    latest: date | None = None
+    for child in out_dir.iterdir():
+        if not child.is_dir():
+            continue
+        try:
+            d = date.fromisoformat(child.name)
+        except ValueError:
+            continue
+        if any(child.glob("lofi_*.mp4")) and (latest is None or d > latest):
+            latest = d
+    return latest
+
 # ── Main modes ─────────────────────────────────────────────────────────────────
 
 def run_generate(days: int, start: date, youtube) -> None:
@@ -646,6 +664,8 @@ def main() -> None:
                         help="Número de vídeos a gerar (padrão: 7)")
     parser.add_argument("-b", metavar="DD-MM-AAAA",
                         help="Data inicial (padrão: hoje)")
+    parser.add_argument("-c", "--continue", dest="continue_", action="store_true",
+                        help="Continua a partir do dia seguinte ao último vídeo em output/")
     parser.add_argument("--upload-from", metavar="DD-MM-AAAA",
                         help="Sobe vídeos já gerados a partir desta data")
     parser.add_argument("--upload-to", metavar="DD-MM-AAAA",
@@ -668,6 +688,15 @@ def main() -> None:
         start = parse_date(args.upload_from)
         end   = parse_date(args.upload_to) if args.upload_to else date(9999, 1, 1)
         run_batch_upload(start, end, youtube)
+    elif args.continue_:
+        last = _last_generated_date(OUTPUT_DIR)
+        if last is None:
+            start = parse_date(args.b) if args.b else date.today()
+            print(f"[INFO] Nenhum vídeo encontrado em {OUTPUT_DIR} — começando de {start.isoformat()}.")
+        else:
+            start = last + timedelta(days=1)
+            print(f"[INFO] Último vídeo em {last.isoformat()} — continuando de {start.isoformat()}.")
+        run_generate(args.n, start, youtube)
     else:
         start = parse_date(args.b) if args.b else date.today()
         run_generate(args.n, start, youtube)
